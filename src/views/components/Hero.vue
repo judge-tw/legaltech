@@ -17,7 +17,7 @@
                 <div class="row justify-content-center align-items-center">
                     <div class="col-lg-7 text-center pt-lg">
                         <img src="img/brand/judge.png" style="width: 200px;" class="img-fluid">
-                        <p class="lead text-white mt-4 mb-5">法客訟專案展示</p>
+                        <h3 class="display-4 text-white mt-4 mb-5">法客訟專案展示</h3>
                         <form role="form">
                             <base-input alternative
                                         class="mb-3"
