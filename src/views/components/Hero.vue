@@ -75,7 +75,7 @@
             hide-backdrop
             size="lg"
             id="modal-visualization"
-            title="分析">
+            title="分析結果">
             <!-- <b-card
                 title="Card Title"
                 img-src="https://picsum.photos/600/300/?image=25"
@@ -105,7 +105,17 @@
                             </transition>
                             <transition name="loading">
                                 <div v-if="loaded">
-                                    <b>資料處理完成</b>
+                                    <div>
+                                        <b>判決上訴維持率</b>
+                                        <b-row align-h="center">
+                                            <apexchart type=donut width=380 :options="rejectChartOptions" :series="rejects" />
+                                        </b-row>
+
+                                        <b>案件結案效率分佈</b>
+                                        <b-row align-h="center">
+                                            <apexchart type=line height=350 :options="chartOptions" :series="series" />
+                                        </b-row>
+                                    </div>
                                 </div>
                             </transition>
                         </b-col>
@@ -119,16 +129,14 @@
                 <b-button size="md" variant="success" @click="ok()">
                     重新搜尋
                 </b-button>
-                <b-button size="md" variant="white" @click="prompt()">
-                    Test
-                </b-button>
             </template>
         </b-modal>
     </section>
 </template>
 <script>
-import Vue from 'vue'
 import BootstrapVue from 'bootstrap-vue'
+import Vue from 'vue'
+import VueApexCharts from 'vue-apexcharts'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -136,12 +144,103 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import loading from "./Loading.vue";
 
 Vue.use(BootstrapVue)
+Vue.component('apexchart', VueApexCharts)
+
 
 export default {
     data: function() {
         return {
             loading: true,
-            loaded: false
+            loaded: false,
+            rejects: [25, 75],
+            rejectChartOptions: {
+                labels: ['駁回判決', '維持判決'],
+                responsive: [
+                    {
+                        breakpoint: 480,
+                        options: {
+                            chart: {
+                                width: 300
+                            },
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                ]
+            },
+            series: [
+                {
+                    name: '個人表現',
+                    type: 'column',
+                    data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30, 11]
+                }, {
+                    name: '整體平均分佈',
+                    type: 'line',
+                    data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39, 10]
+                }],
+            chartOptions: {
+                chart: {
+                    stacked: false,
+                },
+                stroke: {
+                    width: [0, 2, 5],
+                    curve: 'smooth'
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: '50%'
+                    }
+                },
+                fill: {
+                    opacity: [0.85, 0.25, 1],
+                    gradient: {
+                        inverseColors: false,
+                        shade: 'light',
+                        type: "vertical",
+                        opacityFrom: 0.85,
+                        opacityTo: 0.55,
+                        stops: [0, 100, 100, 100]
+                    }
+                },
+                labels: [
+                    3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+                ],
+                markers: {
+                    size: 0
+                },
+                xaxis: {
+                    title: {
+                        text: '延遲時間區間',
+                    },
+                    labels: {
+                        formatter: function (value) {
+                            let year = parseInt(value/12)
+                            if (year <= 0)
+                                return value%12 + "個月";
+                            return parseInt(value/12) + " 年 " + value%12 + " 個月";
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: '件數',
+                    },
+                    min: 0
+                },
+                tooltip: {
+                    shared: true,
+                    intersect: false,
+                    y: {
+                        formatter: function (y) {
+                            if (typeof y !== "undefined") {
+                                return y.toFixed(0) + " 件";
+                            }
+                            return y;
+                        }
+                    }
+                }
+            }
         }
     },
     methods: {
@@ -150,16 +249,18 @@ export default {
             var self = this;
             setTimeout(function(){
                 self.loaded = true;
-            }, 1000);
+            }, 400);
         }
     },
     mounted() {
         this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
-            console.log('Modal is about to be shown')
         })
         this.$root.$on('bv::modal::shown', (bvEvent, modalId) => {
-            console.log('Modal is shown')
             this.prompt()
+        })
+        this.$root.$on('bv::modal::hidden', (bvEvent, modalId) => {
+            this.loading = true;
+            this.loaded = false;
         })
     }
 };
