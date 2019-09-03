@@ -22,8 +22,19 @@
                             <base-input alternative
                                         class="mb-3"
                                         placeholder="姓名"
-                                        addon-left-icon="fa fa-search">
+                                        addon-left-icon="fa fa-search"
+                                        v-model="query">
                             </base-input>
+                            <b-alert
+                                style="margin-top: 1em"
+                                variant="danger"
+                                dismissible
+                                fade
+                                :show="showDismissibleAlert"
+                                @dismissed="showDismissibleAlert=false"
+                                >
+                                查無此人
+                            </b-alert>
                             <div class="text-center">
                                 <base-button
                                     v-b-modal.modal-visualization
@@ -137,11 +148,13 @@
 import BootstrapVue from 'bootstrap-vue'
 import Vue from 'vue'
 import VueApexCharts from 'vue-apexcharts'
+import *  as d3 from 'd3'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 import loading from "./Loading.vue";
+import indictments from './json/indictments.json'
 
 Vue.use(BootstrapVue)
 Vue.component('apexchart', VueApexCharts)
@@ -149,9 +162,77 @@ Vue.component('apexchart', VueApexCharts)
 
 export default {
     data: function() {
+        // let globalArr = [1, 99, 90, 50, 12, 89, 51, 100, 5];
+        let globalArr = [1];
+        let records = new Object();
+        for ( let i=0; i < indictments.length ; i++ ) {
+            let indictment = indictments[i];
+            var [year, month, day] = indictment['偵結日期'].split('-').map(Number);
+            let start = new Date(year+1911, month, day);
+            var [year, month, day] = indictment['裁判日期'].split('-').map(Number);
+            let end = new Date(year+1911, month, day);
+            let interval = Math.round((end - start)/(1000 * 60 * 60 * 24 * 7 * 4));
+
+            globalArr.push(interval);
+
+            indictment['法官'].forEach(function(judge) {
+                if ( !records.hasOwnProperty(judge) ) {
+                    records[judge] = [interval];
+                } else {
+                    records[judge].push(interval);
+                }
+            })
+            // let judge = indictment['法官'][0];
+            // if ( !records.hasOwnProperty(judge) ) {
+            //     records[judge] = [interval];
+            // } else {
+            //     records[judge].push(interval);
+            // }
+        }
+        console.log(records);
+        console.log(Object.keys(records).length);
+
+        var threshold = Math.round((Math.max(...globalArr) - Math.min(...globalArr))/4 - 1);
+        var hist = d3.histogram().value(d => d).domain([Math.min(...globalArr), Math.max(...globalArr)]).thresholds(threshold);
+        // let hist = d3.histogram().value(d => d).thresholds(threshold);
+        let globalDist = hist(globalArr);
+        let globalXAxis = [];
+        let globalYAxis = [];
+        globalDist.forEach(function(cases, index) {
+            globalXAxis.push((index+1)*4);
+            if (index === 0)
+                globalYAxis.push(cases.length -1);
+            else
+                globalYAxis.push(cases.length);
+        })
+
+        let arr = records['劉容妤'];
+        console.log(arr)
+        var threshold = Math.round((Math.max(...arr) - 1)/4 - 1);
+        var hist = d3.histogram().value(d => d).domain([Math.min(...arr), Math.max(...arr)]).thresholds(threshold);
+        let dist = hist(arr);
+        console.log(dist)
+        let xAxis = [];
+        let yAxis = [];
+        dist.forEach(function(cases, index) {
+            xAxis.push((index+1)*4);
+            if (index === 0)
+                // yAxis.push(cases.length -1);
+                yAxis.push(cases.length);
+            else
+                yAxis.push(cases.length);
+        })
+        console.log(yAxis)
+
         return {
+            dismissSecs: 5,
+            dismissCountDown: 0,
+            showDismissibleAlert: false,
             loading: true,
             loaded: false,
+            indictments: indictments,
+            records: records,
+            query: '劉容妤',
             rejects: [25, 75],
             rejectChartOptions: {
                 labels: ['駁回判決', '維持判決'],
@@ -173,13 +254,14 @@ export default {
                 {
                     name: '個人表現',
                     type: 'column',
-                    data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30, 11]
-                }, {
-                    name: '整體平均分佈',
-                    type: 'line',
-                    data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39, 10]
-                }],
-            chartOptions: {
+                    data: yAxis
+                },
+                // {
+                //     name: '整體分佈',
+                //     type: 'line',
+                //     data: globalYAxis.splice(0, yAxis.length)
+                // }
+            ], chartOptions: {
                 chart: {
                     stacked: false,
                 },
@@ -203,9 +285,7 @@ export default {
                         stops: [0, 100, 100, 100]
                     }
                 },
-                labels: [
-                    3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
-                ],
+                labels: xAxis,
                 markers: {
                     size: 0
                 },
@@ -244,8 +324,42 @@ export default {
         }
     },
     methods: {
+        countDownChanged(dismissCountDown) {
+            this.dismissCountDown = dismissCountDown
+        },
+        showAlert() {
+            this.dismissCountDown = this.dismissSecs
+        },
         prompt() {
             this.loading = false;
+
+            if (!this.records.hasOwnProperty(this.query)) {
+                // this.showAlert();
+                this.showDismissibleAlert = true;
+                this.$bvModal.hide('modal-visualization');
+                return
+            }
+            this.showDismissibleAlert = false;
+
+            let arr = this.records[this.query];
+            var threshold = Math.round((Math.max(...arr) - 1)/4 - 1);
+            var hist = d3.histogram().value(d => d).domain([Math.min(...arr), Math.max(...arr)]).thresholds(threshold);
+            let dist = hist(arr);
+            let xAxis = [];
+            let yAxis = [];
+            dist.forEach(function(cases, index) {
+                xAxis.push((index+1)*4);
+                yAxis.push(cases.length);
+            })
+            this.series = [
+                {
+                    name: '個人表現',
+                    type: 'column',
+                    data: yAxis
+                }
+            ];
+            this.chartOptions['labels'] = xAxis;
+
             var self = this;
             setTimeout(function(){
                 self.loaded = true;

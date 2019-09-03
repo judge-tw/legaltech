@@ -10,6 +10,7 @@
   "dependencies": {
     "apexcharts": "^3.8.5",
     "bootstrap-vue": "^2.0.0-rc.28",
+    "d3": "^5.11.0",
     "flatpickr": "^4.5.1",
     "jquery": "1.9.1",
     "nouislider": "^11.1.0",
