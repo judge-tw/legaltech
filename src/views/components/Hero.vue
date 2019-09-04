@@ -121,10 +121,17 @@
                                         <b-row align-h="center">
                                             <apexchart type=donut width=380 :options="rejectChartOptions" :series="rejects" />
                                         </b-row>
+                                        <br><br>
 
-                                        <b>案件結案效率分佈</b>
+                                        <b>案件結案效率分佈（百分比）</b>
                                         <b-row align-h="center">
-                                            <apexchart type=line height=350 :options="chartOptions" :series="series" />
+                                            <apexchart type=line width="900px" height=350 :options="percentChartOptions" :series="percentSeries" />
+                                        </b-row>
+                                        <br><br>
+
+                                        <b>案件結案效率分佈（件數）</b>
+                                        <b-row align-h="center">
+                                            <apexchart type=line width="900px" height=350 :options="chartOptions" :series="series" />
                                         </b-row>
                                     </div>
                                 </div>
@@ -201,7 +208,7 @@ export default {
         globalDist.forEach(function(cases, index) {
             globalXAxis.push((index+1)*4);
             if (index === 0)
-                globalYAxis.push(cases.length -1);
+                globalYAxis.push(cases.length);
             else
                 globalYAxis.push(cases.length);
         })
@@ -225,6 +232,7 @@ export default {
         console.log(yAxis)
 
         return {
+            globalYAxis: globalYAxis,
             dismissSecs: 5,
             dismissCountDown: 0,
             showDismissibleAlert: false,
@@ -250,17 +258,81 @@ export default {
                     }
                 ]
             },
+            percentSeries: [
+                {
+                    name: '個人表現',
+                    type: 'column',
+                    data: yAxis
+                }
+            ], percentChartOptions: {
+                chart: {
+                    stacked: false,
+                },
+                stroke: {
+                    width: [0, 2, 5],
+                    curve: 'smooth'
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: '50%'
+                    }
+                },
+                fill: {
+                    opacity: [0.85, 0.25, 1],
+                    gradient: {
+                        inverseColors: false,
+                        shade: 'light',
+                        type: "vertical",
+                        opacityFrom: 0.85,
+                        opacityTo: 0.55,
+                        stops: [0, 100, 100, 100]
+                    }
+                },
+                labels: xAxis,
+                markers: {
+                    size: 0
+                },
+                xaxis: {
+                    title: {
+                        text: '延遲時間區間',
+                    },
+                    labels: {
+                        formatter: function (value) {
+                            let year = parseInt(value/12)
+                            if (year <= 0)
+                                return value%12 + "個月";
+                            return parseInt(value/12) + " 年 " + value%12 + " 個月";
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: '百分比',
+                    },
+                    min: 0
+                },
+                tooltip: {
+                    shared: true,
+                    intersect: false,
+                    y: {
+                        formatter: function (y) {
+                            // if (typeof y !== "undefined") {
+                            //     return y.toFixed(0) + " 件";
+                            // }
+                            if (typeof y !== "undefined") {
+                                return y + "%";
+                            }
+                            return y;
+                        }
+                    }
+                }
+            },
             series: [
                 {
                     name: '個人表現',
                     type: 'column',
                     data: yAxis
-                },
-                // {
-                //     name: '整體分佈',
-                //     type: 'line',
-                //     data: globalYAxis.splice(0, yAxis.length)
-                // }
+                }
             ], chartOptions: {
                 chart: {
                     stacked: false,
@@ -316,6 +388,9 @@ export default {
                             if (typeof y !== "undefined") {
                                 return y.toFixed(0) + " 件";
                             }
+                            // if (typeof y !== "undefined") {
+                            //     return y + "%";
+                            // }
                             return y;
                         }
                     }
@@ -351,6 +426,20 @@ export default {
                 xAxis.push((index+1)*4);
                 yAxis.push(cases.length);
             })
+
+            let ySum = yAxis.reduce((a,b)=>a+b);
+            let globalYSum = this.globalYAxis.reduce((a,b)=>a+b);  
+            let scalesYAxis = [];
+            let scaledGlobalYAxis = [];
+
+            yAxis.forEach(function(x) {
+                scalesYAxis.push(Number((x/ySum).toFixed(3)));
+            })
+
+            this.globalYAxis.forEach(function(x) {
+                scaledGlobalYAxis.push(Number((x/globalYSum).toFixed(3)));
+            })
+
             this.series = [
                 {
                     name: '個人表現',
@@ -359,6 +448,20 @@ export default {
                 }
             ];
             this.chartOptions['labels'] = xAxis;
+
+            this.percentSeries = [
+                {
+                    name: '個人表現',
+                    type: 'column',
+                    data: scalesYAxis
+                },
+                {
+                    name: '整體分佈',
+                    type: 'line',
+                    data: scaledGlobalYAxis.splice(0, scalesYAxis.length)
+                }
+            ];
+            this.percentChartOptions['labels'] = xAxis;
 
             var self = this;
             setTimeout(function(){
