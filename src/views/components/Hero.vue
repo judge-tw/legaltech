@@ -252,7 +252,7 @@ export default {
             query: '劉容妤',
             rejects: [0, 0, 0, 0],
             rejectChartOptions: {
-                labels: ['維持判決', '無關', '駁回判決', '其他'],
+                labels: ['維持判決', '駁回判決', '無關', '其他'],
                 responsive: [
                     {
                         breakpoint: 480,
@@ -265,7 +265,17 @@ export default {
                             }
                         }
                     }
-                ]
+                ],
+                theme: {
+                    mode: 'light',
+                    palette: 'palette5',
+                    monochrome: {
+                        enabled: false,
+                        color: '#255aee',
+                        shadeTo: 'light',
+                        shadeIntensity: 0.65
+                    }
+                }
             },
             percentSeries: [
                 {
@@ -278,12 +288,12 @@ export default {
                     stacked: false,
                 },
                 stroke: {
-                    width: [0, 2, 5],
+                    width: [0, 5, 5],
                     curve: 'smooth'
                 },
                 plotOptions: {
                     bar: {
-                        columnWidth: '50%'
+                        columnWidth: '40%'
                     }
                 },
                 fill: {
@@ -303,7 +313,7 @@ export default {
                 },
                 xaxis: {
                     title: {
-                        text: '延遲時間區間',
+                        text: '結案時間區間',
                     },
                     labels: {
                         formatter: function (value) {
@@ -334,6 +344,16 @@ export default {
                             return y;
                         }
                     }
+                },
+                theme: {
+                    mode: 'light',
+                    palette: 'palette2',
+                    monochrome: {
+                        enabled: false,
+                        color: '#255aee',
+                        shadeTo: 'light',
+                        shadeIntensity: 0.65
+                    }
                 }
             },
             series: [
@@ -352,7 +372,7 @@ export default {
                 },
                 plotOptions: {
                     bar: {
-                        columnWidth: '50%'
+                        columnWidth: '40%'
                     }
                 },
                 fill: {
@@ -372,7 +392,7 @@ export default {
                 },
                 xaxis: {
                     title: {
-                        text: '延遲時間區間',
+                        text: '結案時間區間',
                     },
                     labels: {
                         formatter: function (value) {
@@ -403,6 +423,16 @@ export default {
                             return y;
                         }
                     }
+                },
+                theme: {
+                    mode: 'light',
+                    palette: 'palette8',
+                    monochrome: {
+                        enabled: false,
+                        color: '#255aee',
+                        shadeTo: 'light',
+                        shadeIntensity: 0.65
+                    }
                 }
             }
         }
@@ -432,15 +462,15 @@ export default {
                 '未知': 0
             }
             assessments[this.query].forEach(function(result) {
-                console.log(result);
+                // console.log(result);
                 if (result.hasOwnProperty("k")) {
-                    console.log(result["k"]);
-                    console.log(result["d"]);
+                    // console.log(result["k"]);
+                    // console.log(result["d"]);
                     rejects[result["k"]] = result["d"];
                 }
             });
             // console.log(rejects);
-            this.rejects = [rejects['好'], rejects['普通'], rejects['爛'], rejects['未知']]
+            this.rejects = [rejects['好'], rejects['爛'], rejects['普通'], rejects['未知']]
 
             this.showDismissibleAlert = false;
 
