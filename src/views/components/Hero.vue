@@ -23,7 +23,8 @@
                                         class="mb-3"
                                         placeholder="姓名"
                                         addon-left-icon="fa fa-search"
-                                        v-model="query">
+                                        v-model="query"
+                                        v-on:keyup.enter="onEnter">
                             </base-input>
                             <b-alert
                                 style="margin-top: 1em"
@@ -253,9 +254,9 @@ export default {
             indictments: indictments,
             records: records,
             query: '劉容妤',
-            rejects: [0, 0, 0, 0],
+            rejects: [0, 0, 0],
             rejectChartOptions: {
-                labels: ['維持判決', '駁回判決', '無關', '其他'],
+                labels: ['判決維持', '判決廢棄', '判決部分維持'],
                 responsive: [
                     {
                         breakpoint: 480,
@@ -441,6 +442,9 @@ export default {
         }
     },
     methods: {
+        onEnter: function() {
+            this.$bvModal.show('modal-visualization');
+        },
         countDownChanged(dismissCountDown) {
             this.dismissCountDown = dismissCountDown
         },
@@ -473,7 +477,7 @@ export default {
                 }
             });
             // console.log(rejects);
-            this.rejects = [rejects['好'], rejects['爛'], rejects['普通'], rejects['未知']]
+            this.rejects = [rejects['好'], rejects['爛'], rejects['普通']]
 
             this.showDismissibleAlert = false;
 
