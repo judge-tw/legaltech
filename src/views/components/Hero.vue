@@ -86,7 +86,13 @@
             hide-backdrop
             size="lg"
             id="modal-visualization"
-            title="分析結果">
+            :title="query">
+            <template slot="modal-header">
+                <h5>
+                    <a :href="'https://sunshine.jrf.org.tw/search/judges?utf8=%E2%9C%93&judge=&q=' + this.query" target="_blank">{{this.query}}</a>
+                    法官分析結果
+                </h5>
+            </template>
             <!-- <b-card
                 title="Card Title"
                 img-src="https://picsum.photos/600/300/?image=25"
@@ -140,10 +146,10 @@
                     </b-row>
                 </b-container>
             </template>
-            <template slot="modal-footer" slot-scope="{ ok, cancel }">
-                <b-button size="md" variant="danger" @click="cancel()">
+            <template slot="modal-footer" slot-scope="{ ok }">
+                <!-- <b-button size="md" variant="danger" @click="cancel()">
                     離開
-                </b-button>
+                </b-button> -->
                 <b-button size="md" variant="success" @click="ok()">
                     重新搜尋
                 </b-button>
@@ -161,6 +167,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 import loading from "./Loading.vue";
+import assessments from './json/assessments.json'
 import indictments from './json/indictments.json'
 
 Vue.use(BootstrapVue)
@@ -170,6 +177,7 @@ Vue.component('apexchart', VueApexCharts)
 export default {
     data: function() {
         // let globalArr = [1, 99, 90, 50, 12, 89, 51, 100, 5];
+
         let globalArr = [1];
         let records = new Object();
         for ( let i=0; i < indictments.length ; i++ ) {
@@ -196,8 +204,8 @@ export default {
             //     records[judge].push(interval);
             // }
         }
-        console.log(records);
-        console.log(Object.keys(records).length);
+        // console.log(records);
+        // console.log(Object.keys(records).length);
 
         var threshold = Math.round((Math.max(...globalArr) - Math.min(...globalArr))/4 - 1);
         var hist = d3.histogram().value(d => d).domain([Math.min(...globalArr), Math.max(...globalArr)]).thresholds(threshold);
@@ -214,11 +222,11 @@ export default {
         })
 
         let arr = records['劉容妤'];
-        console.log(arr)
+        // console.log(arr)
         var threshold = Math.round((Math.max(...arr) - 1)/4 - 1);
         var hist = d3.histogram().value(d => d).domain([Math.min(...arr), Math.max(...arr)]).thresholds(threshold);
         let dist = hist(arr);
-        console.log(dist)
+        // console.log(dist)
         let xAxis = [];
         let yAxis = [];
         dist.forEach(function(cases, index) {
@@ -229,9 +237,10 @@ export default {
             else
                 yAxis.push(cases.length);
         })
-        console.log(yAxis)
+        // console.log(yAxis)
 
         return {
+            assessments: assessments,
             globalYAxis: globalYAxis,
             dismissSecs: 5,
             dismissCountDown: 0,
@@ -241,9 +250,9 @@ export default {
             indictments: indictments,
             records: records,
             query: '劉容妤',
-            rejects: [25, 75],
+            rejects: [0, 0, 0, 0],
             rejectChartOptions: {
-                labels: ['駁回判決', '維持判決'],
+                labels: ['維持判決', '無關', '駁回判決', '其他'],
                 responsive: [
                     {
                         breakpoint: 480,
@@ -409,11 +418,30 @@ export default {
             this.loading = false;
 
             if (!this.records.hasOwnProperty(this.query)) {
-                // this.showAlert();
                 this.showDismissibleAlert = true;
                 this.$bvModal.hide('modal-visualization');
                 return
             }
+
+            // Get 維持率
+            // console.log(assessments[this.query])
+            let rejects = {
+                '好': 0,
+                '普通': 0,
+                '爛': 0,
+                '未知': 0
+            }
+            assessments[this.query].forEach(function(result) {
+                console.log(result);
+                if (result.hasOwnProperty("k")) {
+                    console.log(result["k"]);
+                    console.log(result["d"]);
+                    rejects[result["k"]] = result["d"];
+                }
+            });
+            // console.log(rejects);
+            this.rejects = [rejects['好'], rejects['普通'], rejects['爛'], rejects['未知']]
+
             this.showDismissibleAlert = false;
 
             let arr = this.records[this.query];
