@@ -89,7 +89,7 @@
                     </a>
                 </li> -->
                 <li class="nav-item">
-                    <a class="nav-link nav-link-icon" href="https://github.com/RichoHan/legaltech_hackathon"
+                    <a class="nav-link nav-link-icon" href="https://github.com/judge-tw/legaltech"
                        target="_blank" rel="noopener" data-toggle="tooltip" title="Star us on Github">
                         <i class="fa fa-github"></i>
                         <span class="nav-link-inner--text d-lg-none">Github</span>

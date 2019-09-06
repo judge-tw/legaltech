@@ -67,14 +67,17 @@
                 <div class="row align-items-center justify-content-around stars-and-coded">
                     <div class="col-sm-4">
                         <span class="text-white alpha-7 ml-3">Support us on</span>
-                        <a href="https://github.com/RichoHan/legaltech_hackathon/issues" target="_blank" title="Support us on Github">
+                        <a href="https://github.com/judge-tw/legaltech/issues" target="_blank" title="Support us on Github">
                             <img src="img/brand/github-white-slim.png" style="height: 22px; margin-top: -3px">
                         </a>
                     </div>
                     <div class="col-sm-4 mt-4 mt-sm-0 text-right">
-                        <span class="text-white alpha-7">Coded by</span>
-                        <a href="https://www.creative-tim.com" target="_blank" title="Creative Tim - Premium Bootstrap Themes and Templates">
-                            <img src="img/brand/creativetim-white-slim.png" class="ml-3" style="height: 30px;">
+                        <span class="text-white alpha-7">資料來源</span>
+                        <a href="https://www.lawsnote.com/" target="_blank" title="Lawsnore">
+                            <img src="img/brand/lawsnote.svg" class="ml-3" style="height: 30px;">
+                        </a>
+                        <a href="https://psue.moj.gov.tw/psiqs/" target="_blank" title="Lawsnore">
+                            <img src="img/brand/moj.png" class="ml-3" style="height: 32px;">
                         </a>
                     </div>
                 </div>
