@@ -129,8 +129,15 @@
                                     <div>
                                         <b>判決上訴維持率</b>
                                         <b-row align-h="center">
+                                            <!-- <b-col align-h="center" align-v="center">
+                                                <apexchart type=radialBar width=380 :options="prChartOptions" :series="prSeries" />
+                                            </b-col> -->
+                                            <!-- <b-col align-h="center" align-v="center"> -->
                                             <apexchart type=donut width=380 :options="rejectChartOptions" :series="rejects" />
+                                            <!-- <h5 align-h="center">PR: 70</h5> -->
+                                            <!-- </b-col> -->
                                         </b-row>
+                                        <h4 align-h="center">PR: {{prValue}}</h4>
                                         <br><br>
 
                                         <b>案件結案效率分佈（百分比）</b>
@@ -173,6 +180,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import loading from "./Loading.vue";
 import assessments from './json/assessments.json'
 import indictments from './json/indictments.json'
+import pr from './json/percentile_rank.json'
 
 Vue.use(BootstrapVue)
 Vue.component('apexchart', VueApexCharts)
@@ -250,6 +258,8 @@ export default {
         }
 
         return {
+            pr: pr,
+            prValue: 0,
             windowWidth: chartWidth,
             parentWidth: 0,
             assessments: assessments,
@@ -262,6 +272,17 @@ export default {
             indictments: indictments,
             records: records,
             query: '劉容妤',
+            // prSeries: [67],
+            // prChartOptions: {
+            //     plotOptions: {
+            //         radialBar: {
+            //         hollow: {
+            //             size: '60%',
+            //         }
+            //         },
+            //     },
+            //     labels: ['PR']
+            // },
             rejects: [0, 0, 0],
             rejectChartOptions: {
                 labels: ['判決維持', '判決撤銷', '部分維持'],
@@ -471,6 +492,12 @@ export default {
                 this.showDismissibleAlert = true;
                 this.$bvModal.hide('modal-visualization');
                 return
+            }
+
+            if (this.pr.hasOwnProperty(this.query)) {
+                this.prValue = this.pr[this.query][0];
+            } else {
+                this.prValue = 'No value';
             }
 
             // Get 維持率
